@@ -1,0 +1,45 @@
+# madlib-api LoadBalancer Service
+# Enables the pods in a deployment to be accessible from outside the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: madlib-api-svc
+spec:
+  selector:
+    app: madlib-api
+  ports:
+    - protocol: "TCP"
+      port: 8080
+      targetPort: 8080
+  type: LoadBalancer
+
+---
+# madlib-api Deployment
+# Defines the deployment of the app running in a pod on any worker node
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: madlib-api
+  labels:
+    app: madlib-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: madlib-api
+  template:
+    metadata:
+      labels:
+        app: madlib-api
+    spec:
+      containers:
+        - name: madlib-api
+          image: antsyferov/madlib:1.0.0
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: Always
+          resources:
+            # You must specify requests for CPU to autoscale
+            # based on CPU utilization
+            requests:
+              cpu: "250m"
